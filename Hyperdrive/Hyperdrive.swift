@@ -64,7 +64,7 @@ public class Hyperdrive {
     return "Hyperdrive"
   }
 
-  private let session:NSURLSession
+  private var session: NSURLSession
 
   /// An array of the supported content types in order of preference
   let preferredContentTypes:[String]
@@ -79,14 +79,14 @@ public class Hyperdrive {
     self.preferredContentTypes = preferredContentTypes ?? HTTPDeserialization.preferredContentTypes
   }
   
-//  /** Initialize hyperdrive
-//   - parameter preferredContentTypes: An optional array of the supported content types in order of preference, when this is nil. All types supported by the Representor will be used.
-//   */
-//  public init(sessionConfiguration: NSURLSessionConfiguration, preferrerContentTypes: [String]? = nil) {
-//    session = NSURLSession(configuration: sessionConfiguration)
-//    self.preferredContentTypes = preferredContentTypes ?? HTTPDeserialization.preferredContentTypes
-//  }
-
+  
+  /** Creating new session with specified configuration and sets as default for this Hyperdrive instance.
+   - parameter configuration: Session configuration. Can contains custom session-level headers or setup session as background.
+   */
+  public func setSessionConfiguration(configuration: NSURLSessionConfiguration) {
+      session = NSURLSession(configuration: configuration)
+  }
+  
   // MARK: -
 
   /// Enter a hypermedia API given the root URI
