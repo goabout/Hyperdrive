@@ -71,12 +71,21 @@ public class Hyperdrive {
 
   /** Initialize hyperdrive
   - parameter preferredContentTypes: An optional array of the supported content types in order of preference, when this is nil. All types supported by the Representor will be used.
+  - parameter sessionConfiguration: An optional session configuration. Can be useful to adding custom session-level headers or for configure session as background.
   */
-  public init(preferredContentTypes:[String]? = nil) {
-    let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
+  public init(preferredContentTypes:[String]? = nil, sessionConfiguration: NSURLSessionConfiguration? = nil) {
+    let configuration = sessionConfiguration ?? NSURLSessionConfiguration.defaultSessionConfiguration()
     session = NSURLSession(configuration: configuration)
     self.preferredContentTypes = preferredContentTypes ?? HTTPDeserialization.preferredContentTypes
   }
+  
+//  /** Initialize hyperdrive
+//   - parameter preferredContentTypes: An optional array of the supported content types in order of preference, when this is nil. All types supported by the Representor will be used.
+//   */
+//  public init(sessionConfiguration: NSURLSessionConfiguration, preferrerContentTypes: [String]? = nil) {
+//    session = NSURLSession(configuration: sessionConfiguration)
+//    self.preferredContentTypes = preferredContentTypes ?? HTTPDeserialization.preferredContentTypes
+//  }
 
   // MARK: -
 
