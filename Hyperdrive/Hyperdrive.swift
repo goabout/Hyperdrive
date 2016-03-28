@@ -10,16 +10,16 @@ import Foundation
 import Representor
 import URITemplate
 import Result
-
+import PromiseKit
 
 /// Map a dictionaries values
 func map<K,V>(source:[K:V], transform:(V -> V)) -> [K:V] {
   var result = [K:V]()
-
+  
   for (key, value) in source {
     result[key] = transform(value)
   }
-
+  
   return result
 }
 
@@ -34,21 +34,21 @@ func absoluteRepresentor(baseURL:NSURL?)(original:Representor<HTTPTransition>) -
     return HTTPTransition(uri: absoluteURI(baseURL)(uri: transition.uri)) { builder in
       builder.method = transition.method
       builder.suggestedContentTypes = transition.suggestedContentTypes
-
+      
       for (name, attribute) in transition.attributes {
         builder.addAttribute(name, value: attribute.value, defaultValue: attribute.defaultValue)
       }
-
+      
       for (name, parameter) in transition.parameters {
         builder.addParameter(name, value: parameter.value, defaultValue: parameter.defaultValue)
       }
     }
   }
-
+  
   let representors = map(original.representors) { representors in
     representors.map(absoluteRepresentor(baseURL))
   }
-
+  
   return Representor(transitions: transitions, representors: representors, attributes: original.attributes, metadata: original.metadata)
 }
 
@@ -63,16 +63,16 @@ public class Hyperdrive {
   public static var errorDomain:String {
     return "Hyperdrive"
   }
-
+  
   private var session: NSURLSession
-
+  
   /// An array of the supported content types in order of preference
   let preferredContentTypes:[String]
-
+  
   /** Initialize hyperdrive
-  - parameter preferredContentTypes: An optional array of the supported content types in order of preference, when this is nil. All types supported by the Representor will be used.
-  - parameter sessionConfiguration: An optional session configuration. Can be useful to adding custom session-level headers or for configure session as background.
-  */
+   - parameter preferredContentTypes: An optional array of the supported content types in order of preference, when this is nil. All types supported by the Representor will be used.
+   - parameter sessionConfiguration: An optional session configuration. Can be useful to adding custom session-level headers or for configure session as background.
+   */
   public init(preferredContentTypes:[String]? = nil, sessionConfiguration: NSURLSessionConfiguration? = nil) {
     let configuration = sessionConfiguration ?? NSURLSessionConfiguration.defaultSessionConfiguration()
     session = NSURLSession(configuration: configuration)
@@ -84,22 +84,22 @@ public class Hyperdrive {
    - parameter configuration: Session configuration. Can contains custom session-level headers or setup session as background.
    */
   public func setSessionConfiguration(configuration: NSURLSessionConfiguration) {
-      session = NSURLSession(configuration: configuration)
+    session = NSURLSession(configuration: configuration)
   }
   
   // MARK: -
-
+  
   /// Enter a hypermedia API given the root URI
   public func enter(uri:String, completion:(RepresentorResult -> Void)) {
     request(uri, completion:completion)
   }
-
+  
   // MARK: Subclass hooks
-
+  
   /// Construct a request from a URI and parameters
   public func constructRequest(uri:String, parameters:[String:AnyObject]? = nil) -> RequestResult {
     let expandedURI = URITemplate(template: uri).expand(parameters ?? [:])
-
+    print(expandedURI)
     let error = NSError(domain: Hyperdrive.errorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: "Creating NSURL from given URI failed"])
     return Result(NSURL(string: expandedURI), failWith: error).map { URL in
       let request = NSMutableURLRequest(URL: URL)
@@ -107,37 +107,41 @@ public class Hyperdrive {
       return request
     }
   }
-
-  public func constructRequest(transition:HTTPTransition, parameters:[String:AnyObject]?  = nil, attributes:[String:AnyObject]? = nil) -> RequestResult {
+  
+  public func constructRequest(transition:HTTPTransition, parameters:[String:AnyObject]?  = nil, attributes:[String:AnyObject]? = nil, method: String? = nil) -> RequestResult {
     return constructRequest(transition.uri, parameters:parameters).map { request in
-      request.HTTPMethod = transition.method
-
+      request.HTTPMethod = method ?? transition.method
+      
+      if (request.HTTPMethod == "POST" || request.HTTPMethod == "PUT") {
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+      }
+      
       if let attributes = attributes {
         request.HTTPBody = self.encodeAttributes(attributes, suggestedContentTypes: transition.suggestedContentTypes)
       }
-
+      
       return request
     }
   }
-
+  
   func encodeAttributes(attributes:[String:AnyObject], suggestedContentTypes:[String]) -> NSData? {
     let JSONEncoder = { (attributes:[String:AnyObject]) -> NSData? in
       return try? NSJSONSerialization.dataWithJSONObject(attributes, options: NSJSONWritingOptions(rawValue: 0))
     }
-
+    
     let encoders:[String:([String:AnyObject] -> NSData?)] = [
       "application/json": JSONEncoder
     ]
-
+    
     for contentType in suggestedContentTypes {
       if let encoder = encoders[contentType] {
         return encoder(attributes)
       }
     }
-
+    
     return JSONEncoder(attributes)
   }
-
+  
   public func constructResponse(request:NSURLRequest, response:NSHTTPURLResponse, body:NSData?) -> Representor<HTTPTransition>? {
     if let body = body {
       let representor = HTTPDeserialization.deserialize(response, body: body)
@@ -145,12 +149,12 @@ public class Hyperdrive {
         return absoluteRepresentor(response.URL)(original: representor)
       }
     }
-
+    
     return nil
   }
-
+  
   // MARK: Perform requests
-
+  
   func request(request:NSURLRequest, completion:(RepresentorResult -> Void)) {
     let dataTask = session.dataTaskWithRequest(request, completionHandler: { (body, response, error) -> Void in
       if let error = error {
@@ -164,10 +168,10 @@ public class Hyperdrive {
         }
       }
     })
-
+    
     dataTask.resume()
   }
-
+  
   /// Perform a request with a given URI and parameters
   public func request(uri:String, parameters:[String:AnyObject]? = nil, completion:(RepresentorResult -> Void)) {
     switch constructRequest(uri, parameters: parameters) {
@@ -177,16 +181,37 @@ public class Hyperdrive {
       completion(.Failure(error))
     }
   }
-
+  
   /// Perform a transition with a given parameters and attributes
-  public func request(transition:HTTPTransition, parameters:[String:AnyObject]? = nil, attributes:[String:AnyObject]? = nil, completion:(RepresentorResult -> Void)) {
-    let result = constructRequest(transition, parameters: parameters, attributes: attributes)
-
+  public func request(transition:HTTPTransition, parameters:[String:AnyObject]? = nil, attributes:[String:AnyObject]? = nil, method:String? = nil, completion:(RepresentorResult -> Void)) {
+    let result = constructRequest(transition, parameters: parameters, attributes: attributes, method: method)
+    
     switch result {
     case .Success(let request):
       self.request(request, completion:completion)
     case .Failure(let error):
       completion(.Failure(error))
+    }
+  }
+  
+  public func requestAsync(transition:HTTPTransition, parameters:[String:AnyObject]? = nil, attributes:[String:AnyObject]? = nil, method:String? = nil) -> Promise<Representor<HTTPTransition>> {
+    
+    return Promise { fulfill, reject in
+      let result = constructRequest(transition, parameters: parameters, attributes: attributes, method: method)
+      
+      switch result {
+      case .Success(let request):
+        self.request(request, completion: { representorResult -> Void in
+          switch representorResult {
+          case .Success(let representor):
+            fulfill(representor)
+          case .Failure(let error):
+            reject(error)
+          }
+        })
+      case .Failure(let error):
+        reject(error)
+      }
     }
   }
 }
