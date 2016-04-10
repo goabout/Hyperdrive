@@ -10,7 +10,6 @@ import Foundation
 import Representor
 import URITemplate
 import Result
-import PromiseKit
 
 /// Map a dictionaries values
 func map<K,V>(source:[K:V], transform:(V -> V)) -> [K:V] {
@@ -97,8 +96,11 @@ public class Hyperdrive {
   // MARK: Subclass hooks
   
   /// Construct a request from a URI and parameters
-  public func constructRequest(uri:String, parameters:[String:AnyObject]? = nil) -> RequestResult {
-    let expandedURI = URITemplate(template: uri).expand(parameters ?? [:])
+  public func constructRequest(uri:String, parameters initialParameters:[String:AnyObject]? = nil) -> RequestResult {
+    
+    let parameters = urlencodeDictionary(initialParameters)
+    
+    let expandedURI = URITemplate(template: uri).expand(parameters)
     print(expandedURI)
     let error = NSError(domain: Hyperdrive.errorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: "Creating NSURL from given URI failed"])
     return Result(NSURL(string: expandedURI), failWith: error).map { URL in
@@ -106,6 +108,19 @@ public class Hyperdrive {
       request.setValue(preferredContentTypes.joinWithSeparator(", "), forHTTPHeaderField: "Accept")
       return request
     }
+  }
+  
+  public func urlencodeDictionary(initialParameters: [String:AnyObject]? = nil) -> [String:String] {
+    var parameters: [String:String] = [:]
+    
+    if let paramsToProcess = initialParameters {
+      parameters = paramsToProcess.mapPairs { (key, value) in
+        let stringValue = "\(value)".stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!
+        return (key, stringValue)
+      }
+    }
+    
+    return parameters
   }
   
   public func constructRequest(transition:HTTPTransition, parameters:[String:AnyObject]?  = nil, attributes:[String:AnyObject]? = nil, method: String? = nil) -> RequestResult {
@@ -191,27 +206,6 @@ public class Hyperdrive {
       self.request(request, completion:completion)
     case .Failure(let error):
       completion(.Failure(error))
-    }
-  }
-  
-  public func requestAsync(transition:HTTPTransition, parameters:[String:AnyObject]? = nil, attributes:[String:AnyObject]? = nil, method:String? = nil) -> Promise<Representor<HTTPTransition>> {
-    
-    return Promise { fulfill, reject in
-      let result = constructRequest(transition, parameters: parameters, attributes: attributes, method: method)
-      
-      switch result {
-      case .Success(let request):
-        self.request(request, completion: { representorResult -> Void in
-          switch representorResult {
-          case .Success(let representor):
-            fulfill(representor)
-          case .Failure(let error):
-            reject(error)
-          }
-        })
-      case .Failure(let error):
-        reject(error)
-      }
     }
   }
 }
