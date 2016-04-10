@@ -16,6 +16,5 @@ Pod::Spec.new do |spec|
   spec.dependency 'Representor', '~> 0.7.0'
   spec.dependency 'WebLinking', '~> 1.0'
   spec.dependency 'Result', '~> 1.0'
-  spec.dependency 'PromiseKit', '~> 3.1.0'
 end
 
