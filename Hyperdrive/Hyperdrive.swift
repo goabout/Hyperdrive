@@ -115,14 +115,8 @@ public class Hyperdrive {
     
     if let paramsToProcess = initialParameters {
       parameters = paramsToProcess.mapPairs { (key, value) in
-        
-        var actualValue = ""
-        
-        if let stringValue = value as? String {
-          actualValue = stringValue.stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!
-        }
-        
-        return (key, actualValue)
+        let stringValue = "\(value)".stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!
+        return (key, stringValue)
       }
     }
     
