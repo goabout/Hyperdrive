@@ -166,12 +166,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 27DCA53A1AD57C7800849B15 /* Build configuration list for PBXNativeTarget "Hyperdrive" */;
 			buildPhases = (
-				FD991509AD7CC1968CA17DD2 /* 📦 Check Pods Manifest.lock */,
+				FD991509AD7CC1968CA17DD2 /* [CP] Check Pods Manifest.lock */,
 				27DCA51F1AD57C7700849B15 /* Sources */,
 				27DCA5201AD57C7700849B15 /* Frameworks */,
 				27DCA5211AD57C7700849B15 /* Headers */,
 				27DCA5221AD57C7700849B15 /* Resources */,
-				705C142AD35A5F7FA5BF2D1D /* 📦 Copy Pods Resources */,
+				705C142AD35A5F7FA5BF2D1D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -186,12 +186,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 27DCA53D1AD57C7800849B15 /* Build configuration list for PBXNativeTarget "HyperdriveTests" */;
 			buildPhases = (
-				81D22769AED797C44C2DA5F8 /* 📦 Check Pods Manifest.lock */,
+				81D22769AED797C44C2DA5F8 /* [CP] Check Pods Manifest.lock */,
 				27DCA52B1AD57C7800849B15 /* Sources */,
 				27DCA52C1AD57C7800849B15 /* Frameworks */,
 				27DCA52D1AD57C7800849B15 /* Resources */,
-				2A51CB97BF114B75629964FA /* 📦 Embed Pods Frameworks */,
-				6B2B35DA9502E269EEBB175B /* 📦 Copy Pods Resources */,
+				2A51CB97BF114B75629964FA /* [CP] Embed Pods Frameworks */,
+				6B2B35DA9502E269EEBB175B /* [CP] Copy Pods Resources */,
 				7968C41C0D7B00C04D3E70AB /* Embed Pods Frameworks */,
 			);
 			buildRules = (
@@ -217,9 +217,11 @@
 				TargetAttributes = {
 					27DCA5231AD57C7700849B15 = {
 						CreatedOnToolsVersion = 6.2;
+						LastSwiftMigration = 0810;
 					};
 					27DCA52E1AD57C7800849B15 = {
 						CreatedOnToolsVersion = 6.2;
+						LastSwiftMigration = 0810;
 					};
 				};
 			};
@@ -259,14 +261,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2A51CB97BF114B75629964FA /* 📦 Embed Pods Frameworks */ = {
+		2A51CB97BF114B75629964FA /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -274,14 +276,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HyperdriveTests/Pods-HyperdriveTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6B2B35DA9502E269EEBB175B /* 📦 Copy Pods Resources */ = {
+		6B2B35DA9502E269EEBB175B /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -289,14 +291,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HyperdriveTests/Pods-HyperdriveTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		705C142AD35A5F7FA5BF2D1D /* 📦 Copy Pods Resources */ = {
+		705C142AD35A5F7FA5BF2D1D /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -319,34 +321,34 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HyperdriveTests/Pods-HyperdriveTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		81D22769AED797C44C2DA5F8 /* 📦 Check Pods Manifest.lock */ = {
+		81D22769AED797C44C2DA5F8 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		FD991509AD7CC1968CA17DD2 /* 📦 Check Pods Manifest.lock */ = {
+		FD991509AD7CC1968CA17DD2 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -480,6 +482,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -499,6 +502,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -518,6 +522,7 @@
 				INFOPLIST_FILE = HyperdriveTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -533,6 +538,7 @@
 				INFOPLIST_FILE = HyperdriveTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

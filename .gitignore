@@ -8,3 +8,4 @@
 # CocoaPods
 Pods/
 
+/Podfile.lock

@@ -26,21 +26,21 @@ class HyperBlueprintTests: XCTestCase {
 
     let resourceGroup = ResourceGroup(name: "Questions", description: nil, resources: [listResource, viewResource])
     blueprint = Blueprint(name: "Polls", description: nil, resourceGroups: [resourceGroup])
-    hyperdrive = HyperBlueprint(blueprint: blueprint, baseURL: NSURL(string: "https://polls.apiblueprint.org/")!)
+    hyperdrive = HyperBlueprint(blueprint: blueprint, baseURL: URL(string: "https://polls.apiblueprint.org/")!)
   }
 
   // MARK: Root Resource
 
   func testRootResourceIncludesGETAction() {
     let representor = hyperdrive.rootRepresentor()
-    XCTAssertEqual(representor.transitions["questions"]?.uri, "https://polls.apiblueprint.org/questions")
+    XCTAssertEqual(representor.transitions["questions"]?.first?.uri, "https://polls.apiblueprint.org/questions")
   }
 
   // MARK:
 
   func testResourceForResponse() {
-    let URL = NSURL(string: "https://polls.apiblueprint.org/questions/5")!
-    let response = NSHTTPURLResponse(URL: URL, statusCode: 200, HTTPVersion: nil, headerFields: nil)!
+    let URL = Foundation.URL(string: "https://polls.apiblueprint.org/questions/5")!
+    let response = HTTPURLResponse(url: URL, statusCode: 200, httpVersion: nil, headerFields: nil)!
     let resource = hyperdrive.resourceForResponse(response)!
 
     XCTAssertEqual(resource.name, "Detail")
@@ -51,24 +51,24 @@ class HyperBlueprintTests: XCTestCase {
 
   func testConstructingResponseShowsJSONAttributes() {
     let attributes = ["question": "Favourite Programming Language?"]
-    let URL = NSURL(string: "https://polls.apiblueprint.org/questions/5")!
-    let request = NSURLRequest(URL: URL)
-    let response = NSHTTPURLResponse(URL: URL, statusCode: 200, HTTPVersion: nil, headerFields: ["Content-Type": "application/json"])!
-    let body = try! NSJSONSerialization.dataWithJSONObject(attributes, options: NSJSONWritingOptions(rawValue: 0))
+    let URL = Foundation.URL(string: "https://polls.apiblueprint.org/questions/5")!
+    let request = URLRequest(url: URL)
+    let response = HTTPURLResponse(url: URL, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+    let body = try! JSONSerialization.data(withJSONObject: attributes, options: JSONSerialization.WritingOptions(rawValue: 0))
 
     let representor = hyperdrive.constructResponse(request, response: response, body: body)!
 
-    XCTAssertEqual(representor.attributes as NSDictionary, attributes)
+    XCTAssertEqual(representor.attributes as NSObject, attributes as NSObject)
   }
 
   func testConstructingResponseShowsTransitions() {
-    let URL = NSURL(string: "https://polls.apiblueprint.org/questions")!
-    let request = NSURLRequest(URL: URL)
-    let response = NSHTTPURLResponse(URL: URL, statusCode: 200, HTTPVersion: nil, headerFields: ["Content-Type": "application/json"])!
-    let body = try! NSJSONSerialization.dataWithJSONObject([], options: NSJSONWritingOptions(rawValue: 0))
+    let URL = Foundation.URL(string: "https://polls.apiblueprint.org/questions")!
+    let request = URLRequest(url: URL)
+    let response = HTTPURLResponse(url: URL, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+    let body = try! JSONSerialization.data(withJSONObject: [], options: JSONSerialization.WritingOptions(rawValue: 0))
 
     let representor = hyperdrive.constructResponse(request, response: response, body: body)!
-    let createTransition = representor.transitions["create"]
+    let createTransition = representor.transitions["create"]?.first
 
     XCTAssertTrue(createTransition != nil)
     XCTAssertEqual(createTransition!.uri, "https://polls.apiblueprint.org/questions")
@@ -76,13 +76,13 @@ class HyperBlueprintTests: XCTestCase {
   }
 
   func testConstructingResponseIncludesSelfTransition() {
-    let URL = NSURL(string: "https://polls.apiblueprint.org/questions")!
-    let request = NSURLRequest(URL: URL)
-    let response = NSHTTPURLResponse(URL: URL, statusCode: 200, HTTPVersion: nil, headerFields: ["Content-Type": "application/json"])!
-    let body = try! NSJSONSerialization.dataWithJSONObject([], options: NSJSONWritingOptions(rawValue: 0))
+    let URL = Foundation.URL(string: "https://polls.apiblueprint.org/questions")!
+    let request = URLRequest(url: URL)
+    let response = HTTPURLResponse(url: URL, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+    let body = try! JSONSerialization.data(withJSONObject: [], options: JSONSerialization.WritingOptions(rawValue: 0))
 
     let representor = hyperdrive.constructResponse(request, response: response, body: body)!
-    let transition = representor.transitions["self"]
+    let transition = representor.transitions["self"]?.first!
 
     XCTAssertNotNil(transition)
     XCTAssertEqual(transition?.uri, "https://polls.apiblueprint.org/questions")
@@ -90,14 +90,14 @@ class HyperBlueprintTests: XCTestCase {
   }
 
   func testConstructingResponseHidesTransitionsNotIncludedInAllowHeader() {
-    let URL = NSURL(string: "https://polls.apiblueprint.org/questions")!
-    let request = NSURLRequest(URL: URL)
+    let URL = Foundation.URL(string: "https://polls.apiblueprint.org/questions")!
+    let request = URLRequest(url: URL)
     let headers = [
       "Allow": "HEAD, GET",
       "Content-Type": "application/json",
     ]
-    let response = NSHTTPURLResponse(URL: URL, statusCode: 200, HTTPVersion: nil, headerFields: headers)!
-    let body = try! NSJSONSerialization.dataWithJSONObject([], options: NSJSONWritingOptions(rawValue: 0))
+    let response = HTTPURLResponse(url: URL, statusCode: 200, httpVersion: nil, headerFields: headers)!
+    let body = try! JSONSerialization.data(withJSONObject: [], options: JSONSerialization.WritingOptions(rawValue: 0))
 
     let representor = hyperdrive.constructResponse(request, response: response, body: body)!
     let createTransition = representor.transitions["create"]
@@ -107,18 +107,18 @@ class HyperBlueprintTests: XCTestCase {
 
   func testConstructingResponseShowsWebLinkingHeaders() {
     let attributes = ["question": "Favourite Programming Language?"]
-    let URL = NSURL(string: "https://polls.apiblueprint.org/questions/5")!
-    let request = NSURLRequest(URL: URL)
+    let URL = Foundation.URL(string: "https://polls.apiblueprint.org/questions/5")!
+    let request = URLRequest(url: URL)
     let headers = [
       "Content-Type": "application/json",
       "Link": "<https://polls.apiblueprint.org/questions/6>; rel=\"next\", <https://polls.apiblueprint.org/questions/4>; rel=\"prev\"; type=\"foo\"",
     ]
-    let response = NSHTTPURLResponse(URL: URL, statusCode: 200, HTTPVersion: nil, headerFields: headers)!
-    let body = try! NSJSONSerialization.dataWithJSONObject(attributes, options: NSJSONWritingOptions(rawValue: 0))
+    let response = HTTPURLResponse(url: URL, statusCode: 200, httpVersion: nil, headerFields: headers)!
+    let body = try! JSONSerialization.data(withJSONObject: attributes, options: JSONSerialization.WritingOptions(rawValue: 0))
 
     let representor = hyperdrive.constructResponse(request, response: response, body: body)!
-    let nextTransition = representor.transitions["next"]!
-    let prevTransition = representor.transitions["prev"]!
+    let nextTransition = representor.transitions["next"]!.first!
+    let prevTransition = representor.transitions["prev"]!.first!
 
     XCTAssertEqual(prevTransition.uri, "https://polls.apiblueprint.org/questions/4")
     XCTAssertEqual(prevTransition.method, "GET")
