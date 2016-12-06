@@ -103,11 +103,8 @@ open class Hyperdrive {
   // MARK: Subclass hooks
   
   /// Construct a request from a URI and parameters
-  open func constructRequest(_ uri:String, parameters initialParameters:[String:Any]? = nil) -> RequestResult {
-    
-    let parameters = urlencodeDictionary(initialParameters)
-    
-    let expandedURI = URITemplate(template: uri).expand(parameters)
+  open func constructRequest(_ uri:String, parameters:[String:Any]? = nil) -> RequestResult {
+    let expandedURI = URITemplate(template: uri).expand(parameters ?? [:])
     print(expandedURI)
     let error = NSError(domain: Hyperdrive.errorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: "Creating URL from given URI failed"])
     return Result(URL(string: expandedURI), failWith: error).map { URL in
@@ -115,19 +112,6 @@ open class Hyperdrive {
       request.setValue(preferredContentTypes.joined(separator: ", "), forHTTPHeaderField: "Accept")
       return request
     }
-  }
-  
-  open func urlencodeDictionary(_ initialParameters: [String:Any]? = nil) -> [String:String] {
-    var parameters: [String:String] = [:]
-    
-    if let paramsToProcess = initialParameters {
-      parameters = paramsToProcess.mapPairs { (key, value) in
-        let stringValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        return (key, stringValue)
-      }
-    }
-    
-    return parameters
   }
   
   open func constructRequest(_ transition:HTTPTransition, parameters:[String:Any]?  = nil, attributes:[String:Any]? = nil, method: String? = nil) -> RequestResult {
